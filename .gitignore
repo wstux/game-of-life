@@ -1,5 +1,5 @@
 # Build generated
-build/
+build_*/
 
 # Prerequisites
 *.d
