@@ -16,5 +16,4 @@ endef
 
 $(eval $(call common_rule,debug))
 $(eval $(call common_rule,release))
-$(eval $(call common_rule,release-check))
 

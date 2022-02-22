@@ -14,5 +14,4 @@ all: release/all
 
 $(eval $(call rule,debug))
 $(eval $(call rule,release))
-$(eval $(call rule,release-check))
 
