@@ -145,6 +145,14 @@ set_flag("-O2 -DNDEBUG -g3" RELWITHDEBINFO)
 set_flag("-O0 -g3"          DEBUG)
 set_flag("-Wall -Wextra")
 
+if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    set_flag("-rdynamic")
+    set_flag("-fPIC")
+    set_flag("-ggdb3")
+    set_flag("-ffunction-sections")
+    set_flag("-fstrict-aliasing")
+endif()
+
 #try_set_flag(FPIE "-fPIE")
 #try_set_linker_flag(LINKER_PIE "-pie")
 
