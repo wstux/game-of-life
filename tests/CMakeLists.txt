@@ -4,3 +4,11 @@ TestTarget(ut_life_engine
     LIBRARIES
         life_engine
 )
+
+TestTarget(ut_prog_opts
+    SOURCES
+        ut_prog_opts.cpp
+    LIBRARIES
+        prog_opts
+)
+
