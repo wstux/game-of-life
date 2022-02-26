@@ -3,5 +3,6 @@ ExeTarget(game_of_life
         main.cpp
     LIBRARIES
         life_engine
+        prog_opts
 )
 
