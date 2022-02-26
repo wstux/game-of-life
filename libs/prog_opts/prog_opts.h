@@ -29,6 +29,7 @@
 #include <type_traits>
 #include <unordered_map>
 #include <variant>
+#include <vector>
 
 namespace po {
 
@@ -52,10 +53,16 @@ class prog_opts final
             , po(p)
             , descr(d)
             , p_value((v == nullptr) ? value_ptr_t() : std::make_shared<value_t>(*v))
-        {}
+            , is_switch(std::is_same<T, bool>::value)
+        {
+            if (is_switch && ! p_value) {
+                p_value = std::make_shared<value_t>(false);
+            }
+        }
 
         bool has_value() const { return (p_value.get() == nullptr); }
         std::string_view long_po() const { return std::string_view(po.data() + 3, po.size() - 3); }
+        std::string printable_po() const;
         bool set_value(const char* p_arg);
         std::string_view short_po() const { return std::string_view(po.data(), 2); }
 
@@ -108,8 +115,10 @@ class prog_opts final
         std::string po;
         std::string descr;
         value_ptr_t p_value;
+        bool is_switch;
     };
 
+    using args_list_t = std::vector<arg::ptr>;
     using tokens_list_t = std::unordered_map<std::string_view, arg::ptr>;
 
 public:
@@ -150,8 +159,8 @@ private:
     bool insert_impl(const arg::ptr& a);
 
 private:
-    std::string m_app;
     std::string m_error_msg;
+    args_list_t m_supported_args;
     tokens_list_t m_tokens;
 };
 

@@ -22,12 +22,20 @@
  * THE SOFTWARE.
  */
 
+#include <algorithm>
+#include <sstream>
+
 #include "prog_opts/prog_opts.h"
 
 namespace po {
 
 //////////////////////////////////////////////////////////////////////
 // class prog_opts::arg
+
+std::string prog_opts::arg::printable_po() const
+{
+    return std::string(short_po()) + " [ " + std::string(long_po()) + " ]" + (is_switch ? "" : " arg");
+}
 
 bool prog_opts::arg::set_value(const char* p_arg)
 {
@@ -76,6 +84,7 @@ bool prog_opts::insert_impl(const arg::ptr& a)
         m_error_msg = "Exists program option '" + a->po + "'";
         return false;
     }
+    m_supported_args.emplace_back(a);
     return true;
 }
 
@@ -89,7 +98,6 @@ bool prog_opts::parse(const int argc, char const* const* argv)
         m_error_msg = "Invalid argc value: '" + std::to_string(argc) + "'";
         return false;
     }
-    m_app = argv[0];
 
     for (int i = 1; i < argc; ++i) {
         const std::string_view arg_view(argv[i]);
@@ -118,6 +126,26 @@ bool prog_opts::parse(const int argc, char const* const* argv)
         }
     }
     return true;
+}
+
+std::string prog_opts::usage() const
+{
+    if (m_supported_args.size() == 0) {
+        return std::string();
+    }
+
+    args_list_t::const_iterator it = std::max_element(m_supported_args.cbegin(), m_supported_args.cend(),
+                [] (const arg::ptr& a, const arg::ptr& b) -> bool { return a->printable_po().size() < b->printable_po().size(); });
+    const size_t max_po_size = (*it)->printable_po().size();
+
+    std::stringstream ss;
+    ss << "Allowed options:" << std::endl;
+    constexpr size_t tab_size = 2;
+    for (const arg::ptr& p_arg : m_supported_args) {
+        const size_t delta_size = max_po_size - p_arg->printable_po().size();
+        ss << "  " << p_arg->printable_po() << std::string(delta_size + tab_size, ' ') << p_arg->descr << std::endl;
+    }
+    return ss.str();
 }
 
 } // namespace po
