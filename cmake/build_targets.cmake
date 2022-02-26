@@ -8,6 +8,10 @@ set(_COMMON_TARGET_KW   HEADERS     # headers list
                         LIBRARIES
 )
 
+set(_CUSTOM_TARGET_KW   COMMAND
+                        DEPENDS
+)
+
 set(_EXE_TARGET_KW      ${_COMMON_TARGET_KW}
 )
 
@@ -22,6 +26,8 @@ set(_LIB_TARGET_KW      ${_COMMON_TARGET_KW}
 set(_LIST_VALUES_KW     HEADERS
                         SOURCES
                         LIBRARIES
+                        COMMAND
+                        DEPENDS
 )
 
 set(_FLAG_KW            MODULE
@@ -42,9 +48,12 @@ function(_parse_target_args TARGET_NAME KW_LIST)
     set(key "")
     set(to_parent_scope FALSE)
     foreach(arg IN LISTS ARGN)
+        # Check is 'arg' a keyword.
         _is_kw(${arg} "${KW_LIST}" is_keyword)
+        # Check is 'arg' a keyword and applies to flags keyword.
         _is_kw(${arg} _FLAG_KW is_flag)
 
+        # If 'arg' is keyword - save 'arg' to 'key' variable and save key-flag to parent scope.
         if(is_keyword)
             if (to_parent_scope)
                 set(${TARGET_NAME}_${key} "${${TARGET_NAME}_${key}}" PARENT_SCOPE)
@@ -60,6 +69,7 @@ function(_parse_target_args TARGET_NAME KW_LIST)
             continue()
         endif()
 
+        # If 'key' variable is defined - add data to key args and add to parent scope.
         if(key)
             if(NOT DEFINED ${TARGET_NAME}_${key})
                 set(${TARGET_NAME}_${key} "${arg}")
@@ -81,6 +91,18 @@ function(_parse_target_args TARGET_NAME KW_LIST)
         set(to_parent_scope FALSE)
     endif()
 endfunction()
+
+macro(CustomTarget TARGET_NAME)
+    _parse_target_args(${TARGET_NAME} _CUSTOM_TARGET_KW ${ARGN})
+
+    foreach(key IN LISTS _CUSTOM_TARGET_KW)
+        foreach(dep IN LISTS ${TARGET_NAME}_${key})
+            list(APPEND ${TARGET_NAME}_BUILD_ARGS ${key} ${dep})
+        endforeach()
+    endforeach()
+
+    add_custom_target(${TARGET_NAME} ${${TARGET_NAME}_BUILD_ARGS})
+endmacro()
 
 macro(LibTarget TARGET_NAME)
     _parse_target_args(${TARGET_NAME} _LIB_TARGET_KW ${ARGN})
