@@ -114,6 +114,11 @@ void emplace(std::vector<TPtr<TType>>& cont)
     add<std::tuple_size<TTuple>::value - 1, TTuple, TInsertType, TPtr, TType>::call(cont);
 }
 
+bool starts_with(const std::string& str, const std::string& prefix)
+{
+    return str.rfind(prefix, 0) == 0;
+}
+
 class tester final
 {
 public:
@@ -168,6 +173,11 @@ public:
             for (const test_descr_t& descr : m_tests) {
                 const test_name_t& test_name = descr.first;
                 const itest_suite::ptr& p_suite = descr.second;
+
+                if (starts_with(test_name, disable_prefix)) {
+                    std::cout << "[DISABLED  ] " << m_case_name << "." << test_name << std::endl;
+                    continue;
+                }
 
                 tester::begin_test();
                 std::cout << "[RUN       ] " << m_case_name << "." << test_name << std::endl;
@@ -248,6 +258,8 @@ private:
     }
 
 private:
+    static const std::string disable_prefix;
+
     static int m_ut_result;
     static int m_ut_suite_result;
     static int m_ut_test_result;
@@ -256,6 +268,7 @@ private:
     static std::vector<test_case::ptr> m_tests;
 };
 
+const std::string tester::disable_prefix = "DISABLED";
 int tester::m_ut_result = 0;
 int tester::m_ut_suite_result = 0;
 int tester::m_ut_test_result = 0;
