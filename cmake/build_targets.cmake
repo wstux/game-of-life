@@ -164,6 +164,11 @@ macro(TestTarget TARGET_NAME)
     foreach(lib IN LISTS ${TARGET_NAME}_LIBRARIES)
         target_link_libraries(${TARGET_NAME} ${lib})
 
+        get_target_property(target_type ${lib} TYPE)
+        if(target_type STREQUAL "INTERFACE_LIBRARY")
+            continue()
+        endif()
+
         get_target_property(LIB_INCLUDE_DIR ${lib} INCLUDE_DIRECTORIES)
         target_include_directories(${TARGET_NAME} PRIVATE ${LIB_INCLUDE_DIR})
     endforeach()
